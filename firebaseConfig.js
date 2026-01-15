@@ -9,11 +9,21 @@ dotenv.config();
 // YOU (USER) NEED TO REPLACE THIS WITH YOUR ACTUAL SERVICE ACCOUNT KEY
 let serviceAccount;
 
-try {
-    serviceAccount = require("./serviceAccountKey.json");
-} catch (e) {
-    console.warn("serviceAccountKey.json not found. Database operations will fail until provided.");
-    serviceAccount = {}; // Empty object to allow server to start, but DB calls will fail
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    try {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    } catch (e) {
+        console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT env var", e);
+    }
+}
+
+if (!serviceAccount) {
+    try {
+        serviceAccount = require("./serviceAccountKey.json");
+    } catch (e) {
+        console.warn("serviceAccountKey.json not found and FIREBASE_SERVICE_ACCOUNT not set.");
+        serviceAccount = {}; // Empty object to allow server to start, but DB calls will fail
+    }
 }
 
 if (Object.keys(serviceAccount).length > 0) {
